@@ -17,9 +17,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (profile?.role !== "admin") redirect("/");
 
   return (
-    <div style={{ display: "flex", minHeight: "calc(100vh - 64px)" }}>
+    <div className="flex flex-col md:flex-row min-h-[calc(100vh-64px)]">
       <AdminNav />
-      <div style={{ flex: 1, padding: "32px 32px", overflow: "auto" }}>
+      <div style={{ flex: 1, padding: "40px 48px", overflow: "auto" }}>
         {children}
       </div>
     </div>

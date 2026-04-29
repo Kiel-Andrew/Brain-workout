@@ -6,7 +6,6 @@ import { BarChart2, Users, Settings, Clock, ArrowLeft } from "lucide-react";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: BarChart2, exact: true },
-  { href: "/admin/users", label: "Users", icon: Users, exact: false },
   { href: "/admin/settings", label: "Settings", icon: Settings, exact: false },
 ];
 

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { Users, BarChart2, CheckSquare, TrendingUp } from "lucide-react";
+import DashboardTabs from "@/components/admin/DashboardTabs";
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
@@ -11,6 +12,7 @@ export default async function AdminDashboardPage() {
     { count: totalSessions },
     { count: todaySessions },
     { data: recentResults },
+    { data: allUsers },
   ] = await Promise.all([
     supabase.from("users").select("*", { count: "exact", head: true }),
     supabase.from("workout_results").select("*", { count: "exact", head: true }),
@@ -18,7 +20,10 @@ export default async function AdminDashboardPage() {
     supabase.from("workout_results")
       .select("score, duration_seconds, created_at, users:user_id(full_name, batch_number)")
       .order("created_at", { ascending: false })
-      .limit(8),
+      .limit(15),
+    supabase.from("users")
+      .select("id, full_name, email, batch_number, role, created_at")
+      .order("created_at", { ascending: false }),
   ]);
 
   const avgScore = recentResults && recentResults.length > 0
@@ -32,21 +37,10 @@ export default async function AdminDashboardPage() {
     { label: "Avg. Score (Recent)", value: avgScore, icon: TrendingUp, color: "#f59e0b", glow: "rgba(245,158,11,0.3)" },
   ];
 
-  function formatDuration(secs: number | null) {
-    if (!secs) return "—";
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return `${m}m ${s}s`;
-  }
-
-  function getColorRow(score: number) {
-    return score >= 18 ? "rgba(16,185,129,0.1)" : score >= 10 ? "rgba(245,158,11,0.1)" : "transparent";
-  }
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 32, paddingTop: 10 }}>
       <div>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>Admin Dashboard</h1>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>Admin Dashboard</h1>
         <p style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 4 }}>Overview of engagement and trainee performance</p>
       </div>
 
@@ -70,37 +64,10 @@ export default async function AdminDashboardPage() {
         ))}
       </div>
 
-      {/* Recent results */}
-      <div className="glass-card" style={{ overflow: "hidden" }}>
-        <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border-color)" }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>Recent Sessions</h2>
-        </div>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Trainee</th>
-              <th>Batch</th>
-              <th>Score</th>
-              <th>Duration</th>
-              <th>Completed At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(recentResults ?? []).map((s, i) => {
-              const u = (Array.isArray(s.users) ? s.users[0] : s.users) as { full_name: string; batch_number: string | null } | null;
-              return (
-                <tr key={i} style={{ background: getColorRow(s.score) }}>
-                  <td style={{ fontWeight: 600 }}>{u?.full_name ?? "—"}</td>
-                  <td>{u?.batch_number ? <span className="badge badge-info">{u.batch_number}</span> : <span style={{ color: "var(--text-muted)" }}>—</span>}</td>
-                  <td><span style={{ fontWeight: 700, color: s.score >= 18 ? "#10b981" : s.score >= 10 ? "#f59e0b" : "#ef4444" }}>{s.score}/20</span></td>
-                  <td style={{ color: "var(--text-secondary)" }}>{formatDuration(s.duration_seconds)}</td>
-                  <td style={{ color: "var(--text-muted)", fontSize: 13 }}>{new Date(s.created_at).toLocaleString()}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <DashboardTabs 
+        users={allUsers ?? []} 
+        recentSessions={(recentResults as any) ?? []} 
+      />
     </div>
   );
 }

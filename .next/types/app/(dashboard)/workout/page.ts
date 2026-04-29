@@ -1,4 +1,4 @@
-// File: C:\Math-workout\app\(dashboard)\workout\page.tsx
+// File: C:\Users\Amanda\Documents\Internship\Projects\Brain-workout\app\(dashboard)\workout\page.tsx
 import * as entry from '../../../../../app/(dashboard)/workout/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
