@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import AdminNav from "@/components/admin/AdminNav";
+import Sidebar from "@/components/layout/Sidebar";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -10,15 +10,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role")
+    .select("full_name, role")
     .eq("id", user.id)
     .single();
 
   if (profile?.role !== "admin") redirect("/");
 
   return (
-    <div className="flex flex-col md:flex-row min-h-[calc(100vh-64px)]">
-      <AdminNav />
+    <div className="flex flex-col md:flex-row min-h-screen">
+      <Sidebar
+        fullName={profile?.full_name ?? user.email ?? "Admin"}
+        isAdmin={true}
+      />
       <div style={{ flex: 1, padding: "40px 48px", overflow: "auto" }}>
         {children}
       </div>

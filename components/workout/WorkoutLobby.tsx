@@ -112,6 +112,32 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
     };
   }, [gameState, finishGame]);
 
+  // ── Keyboard support ──
+  useEffect(() => {
+    if (gameState !== "playing") return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input elsewhere (though not likely in this UI)
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      const key = e.key;
+
+      if (/^[0-9]$/.test(key)) {
+        pressKey(key);
+      } else if (key === "Backspace") {
+        pressKey("⌫");
+      } else if (key === "Enter" || key === "=") {
+        pressKey("=");
+      } else if (key.toLowerCase() === "c") {
+        pressKey("C");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [gameState, feedback, input, current]); // Re-bind when state changes to ensure pressKey has fresh context if needed (though pressKey uses state setters)
+
+
   function startGame() {
     const qs = generateQuestions(difficulty);
     setQuestions(qs);
@@ -155,12 +181,27 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
   if (gameState === "lobby") {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <Brain size={26} color="#6366f1" />
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>Math Workout</h1>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Brain size={26} color="#6366f1" />
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>Math Workout</h1>
+          </div>
+          <button 
+            onClick={() => router.push("/")}
+            style={{
+              display: "flex", alignItems: "center", gap: 6, 
+              background: "rgba(0,0,0,0.02)", border: "1px solid var(--border-color)",
+              padding: "8px 16px", borderRadius: 10, color: "var(--text-secondary)",
+              fontSize: 13, fontWeight: 600, cursor: "pointer", transition: "all 0.2s"
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,0,0,0.05)"; (e.currentTarget as HTMLButtonElement).style.color = "var(--text-primary)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,0,0,0.02)"; (e.currentTarget as HTMLButtonElement).style.color = "var(--text-secondary)"; }}
+          >
+            <ChevronLeft size={16} /> Back to Home
+          </button>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 24, alignItems: "start" }}>
+        <div className="lobby-grid">
 
           {/* ── LEFT: Difficulty + Start ── */}
           <div className="glass-card" style={{ padding: 28 }}>
@@ -174,7 +215,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
                 return (
                   <button key={d} id={`btn-diff-${d}`} onClick={() => setDifficulty(d)} style={{
                     padding: "14px 18px", borderRadius: 12, cursor: "pointer", textAlign: "left",
-                    background: active ? `${cfg.color}22` : "rgba(255,255,255,0.03)",
+                    background: active ? `${cfg.color}22` : "rgba(0,0,0,0.02)",
                     border: active ? `2px solid ${cfg.color}66` : "1px solid var(--border-color)",
                     transition: "all 0.2s", fontFamily: "Inter, sans-serif",
                   }}>
@@ -206,63 +247,175 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
 
           {/* ── RIGHT: Leaderboard ── */}
           <div className="glass-card" style={{ overflow: "hidden" }}>
-            <div style={{ padding: "18px 22px", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+            {/* Header with Filter */}
+            <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border-color)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Trophy size={18} color="#f59e0b" />
-                <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>Top 10 Rankings</h2>
-                <span style={{ color: "var(--text-muted)", fontSize: 12 }}>— best time wins</span>
+                <h2 style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>Rankings</h2>
               </div>
               {batches.length > 0 && (
-                <select value={batchFilter} onChange={e => setBatchFilter(e.target.value)} style={{
-                  background: "rgba(255,255,255,0.06)", border: "1px solid var(--border-color)",
-                  borderRadius: 8, color: batchFilter ? "var(--text-primary)" : "var(--text-muted)",
-                  padding: "6px 12px", fontSize: 13, cursor: "pointer", fontFamily: "Inter, sans-serif",
-                }}>
+                <select 
+                  value={batchFilter} 
+                  onChange={e => setBatchFilter(e.target.value)} 
+                  style={{
+                    background: "rgba(0,0,0,0.02)", border: "1px solid var(--border-color)",
+                    borderRadius: 8, color: "var(--text-primary)",
+                    padding: "4px 8px", fontSize: 12, cursor: "pointer", fontFamily: "Inter, sans-serif",
+                  }}
+                >
                   <option value="">All Batches</option>
                   {batches.map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
               )}
             </div>
 
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 48 }}>#</th>
-                  <th>Name</th>
-                  <th>Score</th>
-                  <th>Time</th>
-                  <th>Accuracy</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)", fontSize: 14 }}>
-                      No scores yet — be the first! 🏆
-                    </td>
-                  </tr>
-                ) : filtered.map((e, i) => (
-                  <tr key={i}>
-                    <td>{i < 3 ? <span style={{ fontSize: 18 }}>{MEDALS[i]}</span> : <span style={{ color: "var(--text-muted)", fontWeight: 600 }}>{i + 1}</span>}</td>
-                    <td>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "white", flexShrink: 0 }}>
-                          {e.name.charAt(0).toUpperCase()}
-                        </div>
-                        <span style={{ fontWeight: 600 }}>{e.name}</span>
+            {/* ── TOP 3 PODIUM ── */}
+            {filtered.length > 0 && (
+              <div style={{ 
+                padding: "32px 20px", 
+                display: "flex", 
+                justifyContent: "center", 
+                alignItems: "flex-end", 
+                gap: 20,
+                background: "linear-gradient(180deg, rgba(99,102,241,0.03) 0%, transparent 100%)",
+                borderBottom: "1px solid var(--border-color)",
+                flexWrap: "wrap"
+              }}>
+                {/* 2nd Place */}
+                {filtered[1] && (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, order: 1 }}>
+                    <div style={{ position: "relative" }}>
+                      <div style={{ 
+                        width: 70, height: 70, borderRadius: "50%", 
+                        border: "3px solid #94a3b8", overflow: "hidden",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        background: "white", boxShadow: "0 10px 20px rgba(0,0,0,0.1)"
+                      }}>
+                        <span style={{ fontSize: 24, fontWeight: 800, color: "#475569" }}>{filtered[1].name.charAt(0)}</span>
                       </div>
-                    </td>
-                    <td>
-                      <span style={{ fontWeight: 700, color: e.score >= 18 ? "#10b981" : e.score >= 10 ? "#f59e0b" : "var(--text-primary)" }}>
-                        {e.score}<span style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 400 }}>/20</span>
-                      </span>
-                    </td>
-                    <td style={{ fontWeight: 600, color: "var(--text-primary)" }}>{formatDur(e.duration)}</td>
-                    <td><span className={`badge ${e.score >= 18 ? "badge-success" : e.score >= 10 ? "badge-warning" : "badge-danger"}`}>{Math.round((e.score / 20) * 100)}%</span></td>
+                      <div style={{ position: "absolute", bottom: -8, right: -4, width: 24, height: 24, borderRadius: "50%", background: "#94a3b8", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 12, fontWeight: 900, border: "2px solid white" }}>2</div>
+                      {filtered[1].batch && (
+                        <div style={{ position: "absolute", top: -4, left: -4, background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 6, padding: "2px 6px", fontSize: 10, fontWeight: 700, color: "var(--text-secondary)", boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
+                          {filtered[1].batch}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>{filtered[1].name}</div>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 2 }}>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{formatDur(filtered[1].duration)}</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: filtered[1].score >= 18 ? "var(--success)" : "var(--warning)" }}>{filtered[1].score}/20</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 1st Place */}
+                {filtered[0] && (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, order: 2, transform: "translateY(-20px)" }}>
+                    <div style={{ position: "relative" }}>
+                      <div style={{ 
+                        width: 90, height: 90, borderRadius: "50%", 
+                        border: "4px solid #f59e0b", overflow: "hidden",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        background: "white", boxShadow: "0 15px 30px rgba(245,158,11,0.2)"
+                      }}>
+                        <span style={{ fontSize: 32, fontWeight: 900, color: "#f59e0b" }}>{filtered[0].name.charAt(0)}</span>
+                      </div>
+                      <div style={{ position: "absolute", bottom: -10, right: -6, width: 32, height: 32, borderRadius: "50%", background: "#f59e0b", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 16, fontWeight: 900, border: "3px solid white" }}>1</div>
+                      {filtered[0].batch && (
+                        <div style={{ position: "absolute", top: -4, left: -4, background: "var(--bg-card)", border: "1px solid #f59e0b44", borderRadius: 8, padding: "3px 8px", fontSize: 11, fontWeight: 800, color: "#f59e0b", boxShadow: "0 4px 8px rgba(245,158,11,0.1)" }}>
+                          {filtered[0].batch}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontWeight: 800, fontSize: 15, color: "var(--text-primary)" }}>{filtered[0].name}</div>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 2 }}>
+                        <div style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 600 }}>{formatDur(filtered[0].duration)}</div>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: filtered[0].score >= 18 ? "var(--success)" : "var(--warning)" }}>{filtered[0].score}/20</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3rd Place */}
+                {filtered[2] && (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, order: 3 }}>
+                    <div style={{ position: "relative" }}>
+                      <div style={{ 
+                        width: 70, height: 70, borderRadius: "50%", 
+                        border: "3px solid #cd7f32", overflow: "hidden",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        background: "white", boxShadow: "0 10px 20px rgba(0,0,0,0.1)"
+                      }}>
+                        <span style={{ fontSize: 24, fontWeight: 800, color: "#a16207" }}>{filtered[2].name.charAt(0)}</span>
+                      </div>
+                      <div style={{ position: "absolute", bottom: -8, right: -4, width: 24, height: 24, borderRadius: "50%", background: "#cd7f32", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 12, fontWeight: 900, border: "2px solid white" }}>3</div>
+                      {filtered[2].batch && (
+                        <div style={{ position: "absolute", top: -4, left: -4, background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 6, padding: "2px 6px", fontSize: 10, fontWeight: 700, color: "var(--text-secondary)", boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
+                          {filtered[2].batch}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>{filtered[2].name}</div>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 2 }}>
+                        <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{formatDur(filtered[2].duration)}</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: filtered[2].score >= 18 ? "var(--success)" : "var(--warning)" }}>{filtered[2].score}/20</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="responsive-table-container">
+              <table className="data-table" style={{ minWidth: 600 }}>
+                <thead>
+                  <tr>
+                    <th style={{ width: 48 }}>#</th>
+                    <th>Name</th>
+                    <th>Batch</th>
+                    <th>Score</th>
+                    <th>Time</th>
+                    <th>Accuracy</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)", fontSize: 14 }}>
+                        No scores yet — be the first! 🏆
+                      </td>
+                    </tr>
+                  ) : filtered.slice(3).map((e, i) => {
+                    const rank = i + 4;
+                    return (
+                      <tr key={i}>
+                        <td><span style={{ color: "var(--text-muted)", fontWeight: 600 }}>{rank}</span></td>
+                        <td>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#6366f1,#8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "white", flexShrink: 0 }}>
+                              {e.name.charAt(0).toUpperCase()}
+                            </div>
+                            <span style={{ fontWeight: 600 }}>{e.name}</span>
+                          </div>
+                        </td>
+                        <td><span className="badge badge-info">{e.batch || "—"}</span></td>
+                        <td>
+                          <span style={{ fontWeight: 700, color: e.score >= 18 ? "#10b981" : e.score >= 10 ? "#f59e0b" : "var(--text-primary)" }}>
+                            {e.score}<span style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 400 }}>/20</span>
+                          </span>
+                        </td>
+                        <td style={{ fontWeight: 600, color: "var(--text-primary)" }}>{formatDur(e.duration)}</td>
+                        <td><span className={`badge ${e.score >= 18 ? "badge-success" : e.score >= 10 ? "badge-warning" : "badge-danger"}`}>{Math.round((e.score / 20) * 100)}%</span></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -329,12 +482,12 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
             <button id="btn-play-again" onClick={() => setGameState("lobby")} className="btn-primary" style={{ flex: 1 }}>
               Play Again
             </button>
-            <button id="btn-go-home" onClick={() => router.push("/")} style={{
+            <button id="btn-go-home" onClick={() => setGameState("lobby")} style={{
               flex: 1, padding: "12px", borderRadius: 12, border: "1px solid var(--border-color)",
               background: "transparent", color: "var(--text-primary)", fontWeight: 600,
               cursor: "pointer", fontFamily: "Inter, sans-serif",
             }}>
-              Home
+              View Leaderboard
             </button>
           </div>
         </div>
@@ -398,7 +551,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
         <div className="glass-card" style={{ padding: 24, display: "flex", flexDirection: "column", gap: 14 }}>
 
           {/* Equation */}
-          <div style={{ textAlign: "center", padding: "20px 10px", borderRadius: 12, background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-color)" }}>
+          <div style={{ textAlign: "center", padding: "20px 10px", borderRadius: 12, background: "rgba(0,0,0,0.02)", border: "1px solid var(--border-color)" }}>
             <div style={{ color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, fontWeight: 600 }}>Solve</div>
             <div style={{ fontSize: 44, fontWeight: 900, color: "var(--text-primary)", letterSpacing: "-2px", lineHeight: 1 }}>{q.text} =</div>
           </div>
@@ -428,14 +581,14 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
                     <button key={key} id={`key-${key}`} onClick={() => pressKey(key)} disabled={!!feedback}
                       style={{
                         height: 62, borderRadius: 12, border: "1px solid var(--border-color)",
-                        background: isAction ? "rgba(99,102,241,0.08)" : "rgba(255,255,255,0.04)",
+                        background: isAction ? "rgba(99,102,241,0.08)" : "rgba(0,0,0,0.02)",
                         color: isAction ? "var(--accent-primary)" : "var(--text-primary)",
                         fontSize: key === "⌫" ? 18 : 22, fontWeight: 700, cursor: "pointer",
                         fontFamily: "Inter, sans-serif", transition: "all 0.12s",
                         display: "flex", alignItems: "center", justifyContent: "center",
                       }}
-                      onMouseDown={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.92)"; (e.currentTarget as HTMLButtonElement).style.background = isAction ? "rgba(99,102,241,0.2)" : "rgba(255,255,255,0.12)"; }}
-                      onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; (e.currentTarget as HTMLButtonElement).style.background = isAction ? "rgba(99,102,241,0.08)" : "rgba(255,255,255,0.04)"; }}
+                      onMouseDown={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(0.92)"; (e.currentTarget as HTMLButtonElement).style.background = isAction ? "rgba(99,102,241,0.2)" : "rgba(0,0,0,0.08)"; }}
+                      onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; (e.currentTarget as HTMLButtonElement).style.background = isAction ? "rgba(99,102,241,0.08)" : "rgba(0,0,0,0.02)"; }}
                     >
                       {key === "⌫" ? <Delete size={18} /> : key}
                     </button>

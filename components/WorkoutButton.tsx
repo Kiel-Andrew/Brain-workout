@@ -39,19 +39,19 @@ export default function WorkoutButton({ isAccessOpen, windowLabel }: WorkoutButt
           border: "none", cursor: "pointer",
           display: "flex", flexDirection: "column",
           alignItems: "center", justifyContent: "center", gap: 16,
-          boxShadow: "0 0 60px rgba(99,102,241,0.4), 0 20px 40px rgba(0,0,0,0.3)",
+          boxShadow: "0 10px 30px rgba(99,102,241,0.25), 0 5px 15px rgba(0,0,0,0.1)",
           transition: "all 0.3s ease",
           position: "relative", overflow: "hidden",
         }}
         onMouseEnter={e => {
           const btn = e.currentTarget as HTMLButtonElement;
           btn.style.transform = "scale(1.05) translateY(-4px)";
-          btn.style.boxShadow = "0 0 80px rgba(99,102,241,0.6), 0 30px 60px rgba(0,0,0,0.4)";
+          btn.style.boxShadow = "0 20px 40px rgba(99,102,241,0.35), 0 10px 20px rgba(0,0,0,0.15)";
         }}
         onMouseLeave={e => {
           const btn = e.currentTarget as HTMLButtonElement;
           btn.style.transform = "scale(1) translateY(0)";
-          btn.style.boxShadow = "0 0 60px rgba(99,102,241,0.4), 0 20px 40px rgba(0,0,0,0.3)";
+          btn.style.boxShadow = "0 10px 30px rgba(99,102,241,0.25), 0 5px 15px rgba(0,0,0,0.1)";
         }}
       >
         <div style={{

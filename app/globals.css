@@ -3,17 +3,17 @@
 
 
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-card: #1a1a27;
-  --bg-card-hover: #1f1f30;
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
   --accent-primary: #6366f1;
   --accent-secondary: #8b5cf6;
-  --accent-glow: rgba(99, 102, 241, 0.3);
-  --text-primary: #f0f0ff;
-  --text-secondary: #9090b0;
-  --text-muted: #5a5a7a;
-  --border-color: rgba(99, 102, 241, 0.15);
+  --accent-glow: rgba(99, 102, 241, 0.1);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
@@ -51,7 +51,7 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 16px;
-  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 /* Glow button */
@@ -76,7 +76,7 @@ body {
 
 /* Input style */
 .input-field {
-  background: rgba(255,255,255,0.05);
+  background: #f8fafc;
   border: 1px solid var(--border-color);
   border-radius: 10px;
   color: var(--text-primary);
@@ -146,6 +146,38 @@ body {
   animation: slide-in 0.4s ease forwards;
 }
 
+/* Action card hover effect */
+.action-card {
+  transition: all 0.3s ease;
+}
+.action-card:hover {
+  transform: scale(1.05) translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+  border-color: var(--accent-primary) !important;
+}
+
+/* Lobby Grid Layout */
+.lobby-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .lobby-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.responsive-table-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+
 /* Table styles */
 .data-table {
   width: 100%;
@@ -164,7 +196,7 @@ body {
 }
 .data-table td {
   padding: 14px 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--border-color);
   color: var(--text-primary);
   font-size: 14px;
 }

@@ -58,7 +58,7 @@ export default function AdminSettingsClient({ settings: initial }: { settings: S
   }
 
   const inputStyle: React.CSSProperties = {
-    background: "rgba(255,255,255,0.05)",
+    background: "rgba(0,0,0,0.02)",
     border: "1px solid var(--border-color)",
     borderRadius: 8,
     color: "var(--text-primary)",
@@ -105,7 +105,7 @@ export default function AdminSettingsClient({ settings: initial }: { settings: S
           <p style={{ color: "var(--text-secondary)", fontSize: 13, marginBottom: 14 }}>
             Set the daily time window when trainees can access the workout.
           </p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
             <div>
               <label style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 600, display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>Start Time</label>
               <input id="input-start-time" type="time" value={startTime} onChange={e => setStartTime(e.target.value)} style={inputStyle} />
@@ -114,6 +114,15 @@ export default function AdminSettingsClient({ settings: initial }: { settings: S
               <label style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 600, display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>End Time</label>
               <input id="input-end-time" type="time" value={endTime} onChange={e => setEndTime(e.target.value)} style={inputStyle} />
             </div>
+          </div>
+
+          <div style={{ padding: "12px", borderRadius: 10, background: "rgba(99,102,241,0.05)", border: "1px solid rgba(99,102,241,0.1)", display: "flex", gap: 10 }}>
+            <div style={{ color: "var(--accent-primary)", marginTop: 2 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+            </div>
+            <p style={{ color: "var(--text-secondary)", fontSize: 12, lineHeight: 1.5 }}>
+              <strong>Scope:</strong> These restrictions only apply to the <strong>Math Workout</strong> session. The rest of the application remains accessible at all times.
+            </p>
           </div>
         </div>
       </div>
@@ -160,7 +169,7 @@ export default function AdminSettingsClient({ settings: initial }: { settings: S
                     padding: "10px 12px",
                     borderRadius: 8,
                     border: timerMins === p.seconds / 60 ? "1px solid rgba(139,92,246,0.5)" : "1px solid var(--border-color)",
-                    background: timerMins === p.seconds / 60 ? "rgba(139,92,246,0.15)" : "rgba(255,255,255,0.03)",
+                    background: timerMins === p.seconds / 60 ? "rgba(139,92,246,0.15)" : "rgba(0,0,0,0.02)",
                     color: timerMins === p.seconds / 60 ? "#8b5cf6" : "var(--text-secondary)",
                     fontWeight: 600, fontSize: 13, cursor: "pointer",
                     fontFamily: "Inter, sans-serif",

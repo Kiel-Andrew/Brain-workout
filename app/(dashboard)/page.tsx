@@ -67,10 +67,10 @@ export default async function HomePage() {
           }} />
           <span style={{ color: "var(--text-secondary)", fontSize: 13 }}>
             {!settings.is_workout_open
-              ? "Workout is currently closed by admin"
+              ? "Math Workout is currently closed by admin"
               : isAccessOpen
-                ? `Open window: ${windowLabel}`
-                : `Access window: ${settings.start_time} – ${settings.end_time}`
+                ? `Math Workout open: ${windowLabel}`
+                : `Math Workout window: ${settings.start_time} – ${settings.end_time}`
             }
           </span>
         </div>

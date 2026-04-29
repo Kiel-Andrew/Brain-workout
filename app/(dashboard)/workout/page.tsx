@@ -28,7 +28,8 @@ export default async function WorkoutPage() {
     .sort((a, b) => b.score - a.score || a.duration - b.duration)
     .slice(0, 10);
 
-  const batches = [...new Set(leaderboard.map(e => e.batch).filter(Boolean))] as string[];
+  const batches = [...new Set(leaderboard.map(e => e.batch).filter(Boolean))]
+    .sort((a, b) => (a as string).localeCompare(b as string, undefined, { numeric: true, sensitivity: 'base' })) as string[];
 
   // Timer setting
   const { data: settings } = await supabase

@@ -117,7 +117,7 @@ export default function LoginPage() {
             padding: "12px 24px",
             borderRadius: 12,
             border: "1px solid var(--border-color)",
-            background: "rgba(255,255,255,0.04)",
+            background: "rgba(0,0,0,0.02)",
             color: "var(--text-primary)",
             fontWeight: 600,
             fontSize: 15,
@@ -130,11 +130,11 @@ export default function LoginPage() {
             fontFamily: "Inter, sans-serif",
           }}
           onMouseEnter={e => {
-            (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.08)";
+            (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,0,0,0.04)";
             (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(99,102,241,0.4)";
           }}
           onMouseLeave={e => {
-            (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)";
+            (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,0,0,0.02)";
             (e.currentTarget as HTMLButtonElement).style.borderColor = "var(--border-color)";
           }}
         >
