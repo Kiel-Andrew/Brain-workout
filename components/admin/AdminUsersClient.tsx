@@ -29,9 +29,26 @@ export default function AdminUsersClient({ users: initial }: { users: User[] }) 
 
   async function updateRole(userId: string, newRole: string) {
     const supabase = createClient();
-    const { error } = await supabase.from("users").update({ role: newRole }).eq("id", userId);
-    if (error) { toast.error(error.message); return; }
-    setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+    const isVisitor = newRole.toLowerCase() === "visitor";
+    
+    const { error } = await supabase
+      .from("users")
+      .update({ 
+        role: newRole,
+        ...(isVisitor ? { batch_number: null } : {})
+      })
+      .eq("id", userId);
+
+    if (error) { 
+      toast.error(error.message); 
+      return; 
+    }
+
+    setUsers(prev => prev.map(u => 
+      u.id === userId 
+        ? { ...u, role: newRole, ...(isVisitor ? { batch_number: null } : {}) } 
+        : u
+    ));
     toast.success(`Role updated to ${newRole}`);
   }
 

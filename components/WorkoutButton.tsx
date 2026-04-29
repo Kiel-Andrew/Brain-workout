@@ -5,10 +5,9 @@ import { Brain } from "lucide-react";
 
 interface WorkoutButtonProps {
   isAccessOpen: boolean;
-  windowLabel?: string;
 }
 
-export default function WorkoutButton({ isAccessOpen, windowLabel }: WorkoutButtonProps) {
+export default function WorkoutButton({ isAccessOpen }: WorkoutButtonProps) {
   if (!isAccessOpen) {
     return (
       <div style={{
