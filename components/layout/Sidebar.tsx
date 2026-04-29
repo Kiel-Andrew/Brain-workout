@@ -22,9 +22,10 @@ interface SidebarProps {
   fullName: string;
   isAdmin: boolean;
   batchNumber?: string | null;
+  role?: string;
 }
 
-export default function Sidebar({ fullName, isAdmin, batchNumber }: SidebarProps) {
+export default function Sidebar({ fullName, isAdmin, batchNumber, role }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -133,7 +134,11 @@ export default function Sidebar({ fullName, isAdmin, batchNumber }: SidebarProps
               {fullName}
             </div>
             <div style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 500 }}>
-              {isAdmin ? "Administrator" : `Trainee${batchNumber ? ` • Batch ${batchNumber}` : ""}`}
+              {isAdmin 
+                ? "Administrator" 
+                : role === "visitor" 
+                  ? "Visitor" 
+                  : `Trainee${batchNumber ? ` • Batch ${batchNumber}` : ""}`}
             </div>
           </div>
         </div>

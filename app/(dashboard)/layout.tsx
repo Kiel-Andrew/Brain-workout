@@ -28,6 +28,7 @@ export default async function DashboardLayout({
           fullName={profile?.full_name ?? user.email ?? "Admin"}
           isAdmin={true}
           batchNumber={profile?.batch_number}
+          role={profile?.role ?? "admin"}
         />
         <main style={{ flex: 1, padding: "40px 48px", overflow: "auto" }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", width: "100%" }}>
@@ -44,6 +45,7 @@ export default async function DashboardLayout({
         fullName={profile?.full_name ?? user.email ?? "Trainee"}
         isAdmin={false}
         batchNumber={profile?.batch_number}
+        role={profile?.role ?? "visitor"}
       />
       <main style={{ flex: 1, padding: "32px 24px", maxWidth: 1200, margin: "0 auto", width: "100%" }}>
         {children}

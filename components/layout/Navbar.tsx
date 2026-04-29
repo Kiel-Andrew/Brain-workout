@@ -10,9 +10,10 @@ interface NavbarProps {
   fullName: string;
   isAdmin: boolean;
   batchNumber?: string | null;
+  role?: string;
 }
 
-export default function Navbar({ fullName, isAdmin, batchNumber }: NavbarProps) {
+export default function Navbar({ fullName, isAdmin, batchNumber, role }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -93,6 +94,11 @@ export default function Navbar({ fullName, isAdmin, batchNumber }: NavbarProps) 
             <span style={{ color: "var(--text-primary)", fontSize: 14, fontWeight: 600, lineHeight: 1.2 }}>
               {fullName}
             </span>
+            {role === "visitor" && (
+              <span style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 500, marginTop: 1 }}>
+                Visitor
+              </span>
+            )}
             {batchNumber && (
               <span style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 500, marginTop: 1 }}>
                 Batch {batchNumber}
