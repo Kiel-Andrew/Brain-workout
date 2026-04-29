@@ -57,13 +57,11 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
   const [penalty, setPenalty] = useState(0); // total seconds added for wrong answers
   const [input, setInput] = useState("");
   const [elapsed, setElapsed] = useState(0); // real seconds elapsed
-  const [timeLeft, setTimeLeft] = useState(timerSeconds);
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
   const [saving, setSaving] = useState(false);
 
   const scoreRef = useRef(0);
   const penaltyRef = useRef(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const elapsedRef = useRef<NodeJS.Timeout | null>(null);
   const startRef = useRef(Date.now());
 
@@ -77,8 +75,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
     : filteredByDifficulty;
 
   // ── Save result and show finish screen ──
-  const finishGame = useCallback(async (timedOut = false) => {
-    if (timerRef.current) clearInterval(timerRef.current);
+  const finishGame = useCallback(async () => {
     if (elapsedRef.current) clearInterval(elapsedRef.current);
     setGameState("finished");
     setSaving(true);
@@ -96,22 +93,16 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
       else router.refresh();
     }
     setSaving(false);
-    if (timedOut) toast.error("Time's up!");
   }, [supabase, difficulty]);
 
-  // ── Timers while playing ──
+  // ── Timer while playing ──
   useEffect(() => {
     if (gameState !== "playing") return;
-    // Countdown timer
-    timerRef.current = setInterval(() => {
-      setTimeLeft(t => { if (t <= 1) { finishGame(true); return 0; } return t - 1; });
-    }, 1000);
-    // Elapsed counter
+    // Elapsed counter (progressive)
     elapsedRef.current = setInterval(() => {
       setElapsed(Math.round((Date.now() - startRef.current) / 1000));
     }, 1000);
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
       if (elapsedRef.current) clearInterval(elapsedRef.current);
     };
   }, [gameState, finishGame]);
@@ -148,7 +139,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
     setCurrent(0); setScore(0); scoreRef.current = 0;
     setPenalty(0); penaltyRef.current = 0;
     setInput(""); setElapsed(0);
-    setTimeLeft(timerSeconds); startRef.current = Date.now();
+    startRef.current = Date.now();
     setGameState("playing");
   }
 
@@ -170,7 +161,6 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
     } else {
       // +5 second penalty for wrong answer
       setPenalty(p => { penaltyRef.current = p + PENALTY_SECONDS; return p + PENALTY_SECONDS; });
-      setTimeLeft(t => Math.max(0, t - PENALTY_SECONDS)); // also deduct from countdown
     }
     setTimeout(() => {
       setFeedback(null); setInput("");
@@ -427,25 +417,29 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
     const accuracy = Math.round((score / 20) * 100);
 
     return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 40, gap: 24 }}>
-        <div className="glass-card animate-fade-in" style={{ padding: "40px 48px", textAlign: "center", maxWidth: 440, width: "100%" }}>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)", marginBottom: 28 }}>
-            {accuracy >= 80 ? "🎉 Excellent!" : accuracy >= 50 ? "👍 Good Job!" : "💪 Keep Practicing!"}
-          </h2>
+      <div style={{ display: "flex", justifyContent: "center", paddingTop: 40 }}>
+        <div className="glass-card animate-scale-in" style={{ width: "100%", maxWidth: 400, padding: 40, textAlign: "center" }}>
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#10b98122", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+              <Trophy size={32} color="#10b981" />
+            </div>
+            <h1 style={{ fontSize: 28, fontWeight: 900, color: "var(--text-primary)", letterSpacing: "-1px" }}>Workout Complete!</h1>
+            <p style={{ color: "var(--text-muted)", marginTop: 4 }}>Excellent mental effort today.</p>
+          </div>
 
-          {/* TIME — primary metric */}
-          <div style={{ marginBottom: 20 }}>
+          {/* FINAL TIME — main metric */}
+          <div style={{ marginBottom: 32, padding: "24px", borderRadius: 20, background: "rgba(0,0,0,0.02)", border: "1px solid var(--border-color)" }}>
             <div style={{ color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600, marginBottom: 10 }}>Final Time</div>
-            <div style={{
-              width: 120, height: 120, borderRadius: "50%", margin: "0 auto",
-              background: "linear-gradient(135deg, #10b981, #059669)",
+            <div style={{ 
+              width: 120, height: 120, borderRadius: "50%", margin: "0 auto", 
+              background: "linear-gradient(135deg, #10b981, #059669)", 
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 0 40px rgba(16,185,129,0.4)",
+              boxShadow: "0 0 40px rgba(16,185,129,0.4)"
             }}>
-              <Clock size={20} color="white" style={{ marginBottom: 4 }} />
               <span style={{ fontSize: 26, fontWeight: 900, color: "white", letterSpacing: "-1px", lineHeight: 1 }}>
                 {formatDur(finalTime)}
               </span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.8)", marginTop: 4 }}>TOTAL</span>
             </div>
             {penalty > 0 && (
               <p style={{ color: "#f59e0b", fontSize: 12, marginTop: 10 }}>
@@ -496,9 +490,8 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
   // PLAYING — Calculator UI
   // ═══════════════════════════════════════════════════════
   const q = questions[current];
-  const mins = Math.floor(timeLeft / 60).toString().padStart(2, "0");
-  const secs = (timeLeft % 60).toString().padStart(2, "0");
-  const pctTime = (timeLeft / timerSeconds) * 100;
+  const mins = Math.floor(elapsed / 60).toString().padStart(2, "0");
+  const secs = (elapsed % 60).toString().padStart(2, "0");
   const KEYS = [["7", "8", "9"], ["4", "5", "6"], ["1", "2", "3"], ["C", "0", "⌫"]];
 
   return (
@@ -514,10 +507,10 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
 
           <div style={{
             display: "flex", alignItems: "center", gap: 6,
-            background: pctTime < 20 ? "rgba(239,68,68,0.15)" : "rgba(99,102,241,0.12)",
-            border: `1px solid ${pctTime < 20 ? "rgba(239,68,68,0.3)" : "rgba(99,102,241,0.2)"}`,
+            background: "rgba(99,102,241,0.12)",
+            border: "1px solid rgba(99,102,241,0.2)",
             borderRadius: 10, padding: "6px 14px",
-            color: pctTime < 20 ? "#ef4444" : "var(--text-primary)",
+            color: "var(--text-primary)",
             fontWeight: 700, fontSize: 20, fontVariantNumeric: "tabular-nums",
           }}>
             <Clock size={16} />{mins}:{secs}
