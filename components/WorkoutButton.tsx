@@ -65,7 +65,7 @@ export default function WorkoutButton({ isAccessOpen, windowLabel }: WorkoutButt
             Math Workout
           </div>
           <div style={{ color: "rgba(255,255,255,0.65)", fontSize: 13, marginTop: 4 }}>
-            {windowLabel ? `Open: ${windowLabel}` : "Tap to Begin"}
+            Tap to Begin
           </div>
         </div>
       </button>

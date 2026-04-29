@@ -55,26 +55,6 @@ export default async function HomePage() {
         <WorkoutButton isAccessOpen={isAccessOpen} windowLabel={windowLabel} />
       </div>
 
-      {/* Access window status */}
-      {settings && (settings.start_time || !settings.is_workout_open) && (
-        <div
-          className="glass-card animate-fade-in"
-          style={{ padding: "12px 20px", display: "flex", gap: 8, alignItems: "center", animationDelay: "0.2s" }}
-        >
-          <div style={{
-            width: 8, height: 8, borderRadius: "50%",
-            background: isAccessOpen ? "var(--success)" : "var(--danger)",
-          }} />
-          <span style={{ color: "var(--text-secondary)", fontSize: 13 }}>
-            {!settings.is_workout_open
-              ? "Math Workout is currently closed by admin"
-              : isAccessOpen
-                ? `Math Workout open: ${windowLabel}`
-                : `Math Workout window: ${settings.start_time} – ${settings.end_time}`
-            }
-          </span>
-        </div>
-      )}
     </div>
   );
 }

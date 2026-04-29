@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Trophy, Clock, Brain, ChevronLeft, Delete } from "lucide-react";
 
-type LeaderboardEntry = { name: string; score: number; duration: number; batch: string | null };
+type LeaderboardEntry = { name: string; score: number; duration: number; batch: string | null; difficulty: string };
 type Difficulty = "easy" | "normal" | "hard";
 type GameState = "lobby" | "playing" | "finished";
 type Question = { text: string; answer: number };
@@ -14,9 +14,9 @@ const MEDALS = ["🥇", "🥈", "🥉"];
 const PENALTY_SECONDS = 5;
 
 const DIFF_CONFIG = {
-  easy:   { label: "Easy",   color: "#10b981", desc: "Addition & Subtraction (1–20)",  ops: ["+", "-"] as const,       maxA: 20, maxB: 10 },
-  normal: { label: "Normal", color: "#f59e0b", desc: "All four operations (1–50)",      ops: ["+", "-", "×", "÷"] as const, maxA: 50, maxB: 12 },
-  hard:   { label: "Hard",   color: "#ef4444", desc: "Advanced operations (1–100)",     ops: ["+", "-", "×", "÷"] as const, maxA: 100, maxB: 20 },
+  easy:   { label: "Easy",   color: "#10b981", desc: "Addition & Subtraction",  ops: ["+", "-"] as const,       maxA: 20, maxB: 10 },
+  normal: { label: "Normal", color: "#f59e0b", desc: "All four operations",      ops: ["+", "-", "×", "÷"] as const, maxA: 50, maxB: 12 },
+  hard:   { label: "Hard",   color: "#ef4444", desc: "Advanced operations",     ops: ["+", "-", "×", "÷"] as const, maxA: 100, maxB: 20 },
 };
 
 function generateQuestions(difficulty: Difficulty, count = 20): Question[] {
@@ -70,9 +70,11 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
   useEffect(() => { scoreRef.current = score; }, [score]);
   useEffect(() => { penaltyRef.current = penalty; }, [penalty]);
 
+  const filteredByDifficulty = leaderboard.filter(e => e.difficulty === difficulty);
+
   const filtered = batchFilter
-    ? leaderboard.filter(e => e.batch === batchFilter)
-    : leaderboard;
+    ? filteredByDifficulty.filter(e => e.batch === batchFilter)
+    : filteredByDifficulty;
 
   // ── Save result and show finish screen ──
   const finishGame = useCallback(async (timedOut = false) => {
@@ -88,12 +90,14 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
         user_id: user.id,
         score: scoreRef.current,
         duration_seconds: finalDuration,
+        difficulty: difficulty,
       });
       if (error) toast.error("Failed to save: " + error.message);
+      else router.refresh();
     }
     setSaving(false);
     if (timedOut) toast.error("Time's up!");
-  }, [supabase]);
+  }, [supabase, difficulty]);
 
   // ── Timers while playing ──
   useEffect(() => {

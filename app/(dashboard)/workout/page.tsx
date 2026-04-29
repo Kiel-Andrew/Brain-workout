@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import WorkoutLobby from "@/components/workout/WorkoutLobby";
 
+export const dynamic = "force-dynamic";
+
 export default async function WorkoutPage() {
   const supabase = await createClient();
 
@@ -12,29 +14,28 @@ export default async function WorkoutPage() {
       duration_seconds,
       created_at,
       user_id,
+      difficulty,
       users:user_id (
         full_name,
         batch_number
       )
     `)
-    .order("score", { ascending: false })
-    .order("duration_seconds", { ascending: true });
+    .order("duration_seconds", { ascending: true })
+    .order("score", { ascending: false });
 
   if (error) {
     console.error("Error fetching leaderboard:", error);
   }
 
-  // 1. Group by user_id to get the best score for each individual user
-  // (Using user_id is safer than name to avoid collisions)
-  const userBestMap = new Map<string, { name: string; score: number; duration: number; batch: string | null }>();
+  // 1. Group by user_id AND difficulty to get the best performance for each individual user in each mode
+  const userBestMap = new Map<string, { name: string; score: number; duration: number; batch: string | null; difficulty: string }>();
 
   for (const r of results ?? []) {
-    // Correctly handle the join result which might be an object or array depending on Supabase version/config
     const user = Array.isArray(r.users) ? r.users[0] : r.users;
-    
-    if (!user) continue; // Skip if user record is missing
+    if (!user) continue;
 
-    const userId = r.user_id;
+    const diff = r.difficulty || "normal";
+    const userId = `${r.user_id}-${diff}`;
     const name = user.full_name || "Unknown User";
     const batch = user.batch_number;
     const score = Number(r.score);
@@ -42,23 +43,24 @@ export default async function WorkoutPage() {
 
     const existing = userBestMap.get(userId);
 
-    // If we haven't seen this user, or if this score is better (higher score, or same score with faster time)
-    if (!existing || score > existing.score || (score === existing.score && duration < existing.duration)) {
+    // If we haven't seen this user for this difficulty, or if this result is better
+    if (!existing || duration < existing.duration || (duration === existing.duration && score > existing.score)) {
       userBestMap.set(userId, {
         name,
         score,
         duration,
-        batch
+        batch,
+        difficulty: diff
       });
     }
   }
 
   // 2. Convert to array and sort globally
-  // Higher score first, then shorter duration
+  // Faster duration (lower number) first, then higher score
   const leaderboard = Array.from(userBestMap.values())
     .sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      return a.duration - b.duration;
+      if (a.duration !== b.duration) return a.duration - b.duration;
+      return b.score - a.score;
     });
 
   // 3. Extract unique batches for the filter dropdown
