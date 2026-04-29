@@ -1,4 +1,4 @@
-// File: C:\Math-workout\app\signup\page.tsx
+// File: C:\Brain-workout\app\signup\page.tsx
 import * as entry from '../../../../app/signup/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
