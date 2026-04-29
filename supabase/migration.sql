@@ -48,12 +48,24 @@ CREATE POLICY "users_admin_update_any"
 -- ============================================================
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
+DECLARE
+  assigned_role text;
 BEGIN
-  INSERT INTO public.users (id, full_name, email)
+  -- Auto-tag based on email domain
+  IF new.email LIKE '%@spmadridlaw.com' THEN
+    assigned_role := 'trainee';
+  ELSIF new.email LIKE '%@gmail.com' THEN
+    assigned_role := 'visitor';
+  ELSE
+    assigned_role := 'visitor'; -- Default fallback
+  END IF;
+
+  INSERT INTO public.users (id, full_name, email, role)
   VALUES (
     new.id,
     COALESCE(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
-    new.email
+    new.email,
+    assigned_role
   );
   RETURN new;
 END;

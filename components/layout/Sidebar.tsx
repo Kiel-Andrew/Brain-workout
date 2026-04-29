@@ -21,9 +21,10 @@ import toast from "react-hot-toast";
 interface SidebarProps {
   fullName: string;
   isAdmin: boolean;
+  batchNumber?: string | null;
 }
 
-export default function Sidebar({ fullName, isAdmin }: SidebarProps) {
+export default function Sidebar({ fullName, isAdmin, batchNumber }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -132,7 +133,7 @@ export default function Sidebar({ fullName, isAdmin }: SidebarProps) {
               {fullName}
             </div>
             <div style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 500 }}>
-              {isAdmin ? "Administrator" : "Trainee"}
+              {isAdmin ? "Administrator" : `Trainee${batchNumber ? ` • Batch ${batchNumber}` : ""}`}
             </div>
           </div>
         </div>

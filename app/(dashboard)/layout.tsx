@@ -15,7 +15,7 @@ export default async function DashboardLayout({
 
   const { data: profile } = await supabase
     .from("users")
-    .select("full_name, role")
+    .select("full_name, role, batch_number")
     .eq("id", user.id)
     .single();
 
@@ -27,6 +27,7 @@ export default async function DashboardLayout({
         <Sidebar
           fullName={profile?.full_name ?? user.email ?? "Admin"}
           isAdmin={true}
+          batchNumber={profile?.batch_number}
         />
         <main style={{ flex: 1, padding: "40px 48px", overflow: "auto" }}>
           <div style={{ maxWidth: 1200, margin: "0 auto", width: "100%" }}>
@@ -42,6 +43,7 @@ export default async function DashboardLayout({
       <Navbar
         fullName={profile?.full_name ?? user.email ?? "Trainee"}
         isAdmin={false}
+        batchNumber={profile?.batch_number}
       />
       <main style={{ flex: 1, padding: "32px 24px", maxWidth: 1200, margin: "0 auto", width: "100%" }}>
         {children}

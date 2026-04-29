@@ -9,9 +9,10 @@ import toast from "react-hot-toast";
 interface NavbarProps {
   fullName: string;
   isAdmin: boolean;
+  batchNumber?: string | null;
 }
 
-export default function Navbar({ fullName, isAdmin }: NavbarProps) {
+export default function Navbar({ fullName, isAdmin, batchNumber }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -77,19 +78,27 @@ export default function Navbar({ fullName, isAdmin }: NavbarProps) {
         )}
 
         {/* User avatar + name */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{
-            width: 34, height: 34, borderRadius: "50%",
+            width: 36, height: 36, borderRadius: "50%",
             background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 13, fontWeight: 700, color: "white",
+            fontSize: 14, fontWeight: 700, color: "white",
             boxShadow: "0 0 10px rgba(99,102,241,0.3)",
+            flexShrink: 0
           }}>
             {fullName.charAt(0).toUpperCase()}
           </div>
-          <span style={{ color: "var(--text-primary)", fontSize: 14, fontWeight: 600 }}>
-            {fullName}
-          </span>
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <span style={{ color: "var(--text-primary)", fontSize: 14, fontWeight: 600, lineHeight: 1.2 }}>
+              {fullName}
+            </span>
+            {batchNumber && (
+              <span style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 500, marginTop: 1 }}>
+                Batch {batchNumber}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Logout */}
