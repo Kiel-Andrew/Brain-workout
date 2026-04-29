@@ -281,7 +281,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
                 borderBottom: "1px solid var(--border-color)",
                 flexWrap: "wrap"
               }}>
-                {/* 2nd Place */}
+                {/* 2nd Place (Left) */}
                 {filtered[1] && (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, order: 1 }}>
                     <div style={{ position: "relative" }}>
@@ -294,11 +294,6 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
                         <span style={{ fontSize: 24, fontWeight: 800, color: "#475569" }}>{filtered[1].name.charAt(0)}</span>
                       </div>
                       <div style={{ position: "absolute", bottom: -8, right: -4, width: 24, height: 24, borderRadius: "50%", background: "#94a3b8", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 12, fontWeight: 900, border: "2px solid white" }}>2</div>
-                      {filtered[1].batch && (
-                        <div style={{ position: "absolute", top: -4, left: -4, background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 6, padding: "2px 6px", fontSize: 10, fontWeight: 700, color: "var(--text-secondary)", boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
-                          {filtered[1].batch}
-                        </div>
-                      )}
                     </div>
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>{filtered[1].name}</div>
@@ -310,7 +305,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
                   </div>
                 )}
 
-                {/* 1st Place */}
+                {/* 1st Place (Middle) */}
                 {filtered[0] && (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, order: 2, transform: "translateY(-20px)" }}>
                     <div style={{ position: "relative" }}>
@@ -323,11 +318,6 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
                         <span style={{ fontSize: 32, fontWeight: 900, color: "#f59e0b" }}>{filtered[0].name.charAt(0)}</span>
                       </div>
                       <div style={{ position: "absolute", bottom: -10, right: -6, width: 32, height: 32, borderRadius: "50%", background: "#f59e0b", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 16, fontWeight: 900, border: "3px solid white" }}>1</div>
-                      {filtered[0].batch && (
-                        <div style={{ position: "absolute", top: -4, left: -4, background: "var(--bg-card)", border: "1px solid #f59e0b44", borderRadius: 8, padding: "3px 8px", fontSize: 11, fontWeight: 800, color: "#f59e0b", boxShadow: "0 4px 8px rgba(245,158,11,0.1)" }}>
-                          {filtered[0].batch}
-                        </div>
-                      )}
                     </div>
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontWeight: 800, fontSize: 15, color: "var(--text-primary)" }}>{filtered[0].name}</div>
@@ -339,7 +329,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
                   </div>
                 )}
 
-                {/* 3rd Place */}
+                {/* 3rd Place (Right) */}
                 {filtered[2] && (
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, order: 3 }}>
                     <div style={{ position: "relative" }}>
@@ -352,11 +342,6 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
                         <span style={{ fontSize: 24, fontWeight: 800, color: "#a16207" }}>{filtered[2].name.charAt(0)}</span>
                       </div>
                       <div style={{ position: "absolute", bottom: -8, right: -4, width: 24, height: 24, borderRadius: "50%", background: "#cd7f32", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 12, fontWeight: 900, border: "2px solid white" }}>3</div>
-                      {filtered[2].batch && (
-                        <div style={{ position: "absolute", top: -4, left: -4, background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 6, padding: "2px 6px", fontSize: 10, fontWeight: 700, color: "var(--text-secondary)", boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
-                          {filtered[2].batch}
-                        </div>
-                      )}
                     </div>
                     <div style={{ textAlign: "center" }}>
                       <div style={{ fontWeight: 700, fontSize: 13, color: "var(--text-primary)" }}>{filtered[2].name}</div>
@@ -367,6 +352,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
                     </div>
                   </div>
                 )}
+
               </div>
             )}
 
@@ -387,6 +373,12 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
                     <tr>
                       <td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)", fontSize: 14 }}>
                         No scores yet — be the first! 🏆
+                      </td>
+                    </tr>
+                  ) : filtered.length <= 3 ? (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)", fontSize: 13 }}>
+                        The top users are on the podium! 🏆
                       </td>
                     </tr>
                   ) : filtered.slice(3).map((e, i) => {
@@ -416,6 +408,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
                 </tbody>
               </table>
             </div>
+
           </div>
         </div>
       </div>
@@ -553,7 +546,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
           {/* Equation */}
           <div style={{ textAlign: "center", padding: "20px 10px", borderRadius: 12, background: "rgba(0,0,0,0.02)", border: "1px solid var(--border-color)" }}>
             <div style={{ color: "var(--text-muted)", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8, fontWeight: 600 }}>Solve</div>
-            <div style={{ fontSize: 44, fontWeight: 900, color: "var(--text-primary)", letterSpacing: "-2px", lineHeight: 1 }}>{q.text} =</div>
+            <div style={{ fontSize: 44, fontWeight: 900, color: "var(--text-primary)", letterSpacing: "-2px", lineHeight: 1 }}>{q.text}</div>
           </div>
 
           {/* Answer display */}
@@ -609,7 +602,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
               transition: "all 0.2s",
               boxShadow: (!input || !!feedback) ? "none" : "0 0 20px rgba(99,102,241,0.35)",
             }}>
-            SUBMIT  =
+            SUBMIT
           </button>
         </div>
       </div>
