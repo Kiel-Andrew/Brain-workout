@@ -18,7 +18,7 @@ export default async function AdminDashboardPage() {
     supabase.from("workout_results").select("*", { count: "exact", head: true }),
     supabase.from("workout_results").select("*", { count: "exact", head: true }).gte("created_at", today),
     supabase.from("workout_results")
-      .select("score, duration_seconds, created_at, difficulty, users:user_id(full_name, batch_number)")
+      .select("score, duration_seconds, created_at, difficulty, users:user_id(full_name, batch_number, role)")
       .order("created_at", { ascending: false }),
     supabase.from("users")
       .select("id, full_name, email, batch_number, role, created_at")

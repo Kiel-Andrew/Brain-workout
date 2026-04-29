@@ -22,9 +22,11 @@ type Session = {
   users: {
     full_name: string;
     batch_number: string | null;
+    role: string;
   } | {
     full_name: string;
     batch_number: string | null;
+    role: string;
   }[];
 };
 

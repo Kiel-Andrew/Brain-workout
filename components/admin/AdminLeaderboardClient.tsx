@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Trophy, Calendar, Filter, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { Trophy, Calendar, Filter, User, Layers, UserCircle } from "lucide-react";
 
 type Session = {
   score: number;
@@ -11,9 +13,11 @@ type Session = {
   users: {
     full_name: string;
     batch_number: string | null;
+    role: string;
   } | {
     full_name: string;
     batch_number: string | null;
+    role: string;
   }[];
 };
 
@@ -22,8 +26,36 @@ interface AdminLeaderboardClientProps {
 }
 
 export default function AdminLeaderboardClient({ sessions }: AdminLeaderboardClientProps) {
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
+  const router = useRouter();
+  const [selectedDate, setSelectedDate] = useState(new Date().toLocaleDateString("en-CA"));
   const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
+  const [batchFilter, setBatchFilter] = useState<string>("all");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+
+  useEffect(() => {
+    const supabase = createClient();
+    
+    // Subscribe to any changes in workout_results
+    const channel = supabase
+      .channel('admin-leaderboard-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen for all changes (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'workout_results',
+        },
+        () => {
+          // When a change occurs, refresh the server component data
+          router.refresh();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [router]);
 
   function formatDuration(secs: number | null) {
     if (!secs) return "—";
@@ -32,33 +64,29 @@ export default function AdminLeaderboardClient({ sessions }: AdminLeaderboardCli
     return `${m}m ${s}s`;
   }
 
-  // Filter sessions by date and difficulty
+  const availableBatches = Array.from(new Set(
+    sessions.map(s => {
+      const u = (Array.isArray(s.users) ? s.users[0] : s.users) as any;
+      return u?.batch_number;
+    }).filter(Boolean)
+  )).sort((a, b) => (a as string).localeCompare(b as string, undefined, { numeric: true, sensitivity: 'base' })) as string[];
+
+  // Filter sessions by date, difficulty, batch, and role
   const filteredSessions = sessions.filter(s => {
-    const sessionDate = new Date(s.created_at).toISOString().split("T")[0];
+    const sessionDate = new Date(s.created_at).toLocaleDateString("en-CA");
     const dateMatch = sessionDate === selectedDate;
     const diffMatch = difficultyFilter === "all" || s.difficulty === difficultyFilter;
-    return dateMatch && diffMatch;
+    
+    const u = (Array.isArray(s.users) ? s.users[0] : s.users) as any;
+    const userBatch = u?.batch_number || null;
+    const batchMatch = batchFilter === "all" || userBatch === batchFilter;
+    const roleMatch = roleFilter === "all" || (u?.role || "trainee") === roleFilter;
+
+    return dateMatch && diffMatch && batchMatch && roleMatch;
   });
 
-  // Group by user to get the BEST result for each user on that day
-  const dailyBest = new Map<string, Session>();
-  
-  filteredSessions.forEach(s => {
-    const user = Array.isArray(s.users) ? s.users[0] : s.users;
-    if (!user) return;
-    
-    const userName = user.full_name || "Unknown";
-    const existing = dailyBest.get(userName);
-    
-    if (!existing || 
-        (s.duration_seconds ?? 9999) < (existing.duration_seconds ?? 9999) || 
-        ((s.duration_seconds === existing.duration_seconds) && s.score > existing.score)) {
-      dailyBest.set(userName, s);
-    }
-  });
-
-  // Convert to array and sort by duration (asc) then score (desc)
-  const rankedResults = Array.from(dailyBest.values()).sort((a, b) => {
+  // Sort filtered sessions by duration (asc) then score (desc)
+  const rankedResults = [...filteredSessions].sort((a, b) => {
     const durA = a.duration_seconds ?? 9999;
     const durB = b.duration_seconds ?? 9999;
     if (durA !== durB) return durA - durB;
@@ -88,6 +116,49 @@ export default function AdminLeaderboardClient({ sessions }: AdminLeaderboardCli
             </div>
           </div>
 
+          {/* Role Filter */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Role</label>
+            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <UserCircle size={14} style={{ position: "absolute", left: 10, color: "var(--text-muted)" }} />
+              <select 
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                style={{
+                  padding: "8px 12px 8px 32px", borderRadius: 8, border: "1px solid var(--border-color)",
+                  background: "rgba(0,0,0,0.02)", color: "var(--text-primary)", fontSize: 13,
+                  fontFamily: "Inter, sans-serif", outline: "none", cursor: "pointer", minWidth: 110
+                }}
+              >
+                <option value="all">All Roles</option>
+                <option value="trainee">Trainee</option>
+                <option value="visitor">Visitor</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Batch Filter */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Batch</label>
+            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <Layers size={14} style={{ position: "absolute", left: 10, color: "var(--text-muted)" }} />
+              <select 
+                value={batchFilter}
+                onChange={(e) => setBatchFilter(e.target.value)}
+                style={{
+                  padding: "8px 12px 8px 32px", borderRadius: 8, border: "1px solid var(--border-color)",
+                  background: "rgba(0,0,0,0.02)", color: "var(--text-primary)", fontSize: 13,
+                  fontFamily: "Inter, sans-serif", outline: "none", cursor: "pointer", minWidth: 100
+                }}
+              >
+                <option value="all">All Batches</option>
+                {availableBatches.map(b => (
+                  <option key={b} value={b}>Batch {b}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           {/* Difficulty Filter */}
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             <label style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Difficulty</label>
@@ -112,7 +183,7 @@ export default function AdminLeaderboardClient({ sessions }: AdminLeaderboardCli
         </div>
 
         <div style={{ background: "rgba(99,102,241,0.1)", padding: "8px 16px", borderRadius: 10, border: "1px solid rgba(99,102,241,0.2)" }}>
-          <span style={{ fontSize: 13, color: "#6366f1", fontWeight: 600 }}>{rankedResults.length} Participants Today</span>
+          <span style={{ fontSize: 13, color: "#6366f1", fontWeight: 600 }}>{rankedResults.length} Sessions Found</span>
         </div>
       </div>
 
@@ -136,7 +207,7 @@ export default function AdminLeaderboardClient({ sessions }: AdminLeaderboardCli
                 <td colSpan={7} style={{ textAlign: "center", padding: "60px", color: "var(--text-muted)" }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
                     <Trophy size={32} opacity={0.2} />
-                    <span>No records found for this date and difficulty</span>
+                    <span>No records found for these filters</span>
                   </div>
                 </td>
               </tr>
