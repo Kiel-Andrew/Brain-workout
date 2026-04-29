@@ -500,7 +500,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
 
         {/* Header: back / timer / score */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <button onClick={() => { if (timerRef.current) clearInterval(timerRef.current); if (elapsedRef.current) clearInterval(elapsedRef.current); setGameState("lobby"); }}
+          <button onClick={() => { if (elapsedRef.current) clearInterval(elapsedRef.current); setGameState("lobby"); }}
             style={{ display: "flex", alignItems: "center", gap: 4, background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontFamily: "Inter, sans-serif", fontSize: 13 }}>
             <ChevronLeft size={16} /> Back
           </button>
