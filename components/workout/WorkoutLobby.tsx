@@ -83,14 +83,44 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
     const finalDuration = realElapsed + penaltyRef.current;
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      const { error } = await supabase.from("workout_results").insert({
-        user_id: user.id,
-        score: scoreRef.current,
-        duration_seconds: finalDuration,
-        difficulty: difficulty,
-      });
-      if (error) toast.error("Failed to save: " + error.message);
-      else router.refresh();
+      // 1. Check for existing best score for this difficulty
+      const { data: bestRecords } = await supabase
+        .from("workout_results")
+        .select("id, duration_seconds")
+        .eq("user_id", user.id)
+        .eq("difficulty", difficulty)
+        .order("duration_seconds", { ascending: true })
+        .limit(1);
+
+      const existing = bestRecords && bestRecords.length > 0 ? bestRecords[0] : null;
+
+      if (!existing) {
+        // First time finishing this difficulty
+        const { error } = await supabase.from("workout_results").insert({
+          user_id: user.id,
+          score: scoreRef.current,
+          duration_seconds: finalDuration,
+          difficulty: difficulty,
+        });
+        if (error) toast.error("Failed to save: " + error.message);
+        else router.refresh();
+      } else if (finalDuration < existing.duration_seconds) {
+        // New personal best time!
+        const { error } = await supabase
+          .from("workout_results")
+          .update({
+            score: scoreRef.current,
+            duration_seconds: finalDuration,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existing.id);
+        
+        if (error) toast.error("Failed to save personal best: " + error.message);
+        else {
+          toast.success("New Personal Best!");
+          router.refresh();
+        }
+      }
     }
     setSaving(false);
   }, [supabase, difficulty]);
