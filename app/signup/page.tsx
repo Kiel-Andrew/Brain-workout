@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { Mail, Lock, User, Hash, Loader2, Calculator } from "lucide-react";
+import { Mail, Lock, User, Hash, Loader2, Brain } from "lucide-react";
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState("");
@@ -90,13 +90,13 @@ export default function SignupPage() {
             marginBottom: 16,
             boxShadow: "0 0 30px rgba(99,102,241,0.4)",
           }}>
-            <Calculator size={30} color="white" />
+            <Brain size={30} color="white" />
           </div>
           <h1 style={{ fontSize: 24, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>
             Create Account
           </h1>
           <p style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 6 }}>
-            Join the Math Workout program
+            Join the Brain Workout program
           </p>
         </div>
 

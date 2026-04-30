@@ -88,7 +88,7 @@ export default function Sidebar({ fullName, isAdmin, batchNumber, role }: Sideba
         ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
       `}>
         {/* Logo Section */}
-        <div className="hidden md:flex flex-col gap-4 mb-6">
+        <div className="hidden md:flex flex-col gap-4 mb-6" style={{ margin: "0 12px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{
               width: 40, height: 40, borderRadius: 12,
@@ -110,39 +110,6 @@ export default function Sidebar({ fullName, isAdmin, batchNumber, role }: Sideba
           </div>
         </div>
 
-        {/* User Profile Summary */}
-        <div style={{ 
-          padding: "12px", 
-          borderRadius: 12, 
-          background: "rgba(0,0,0,0.02)", 
-          border: "1px solid var(--border-color)",
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          marginBottom: 16
-        }}>
-          <div style={{
-            width: 36, height: 36, borderRadius: "50%",
-            background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 14, fontWeight: 700, color: "white",
-          }}>
-            {fullName.charAt(0).toUpperCase()}
-          </div>
-          <div style={{ overflow: "hidden" }}>
-            <div style={{ color: "var(--text-primary)", fontSize: 14, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              {fullName}
-            </div>
-            <div style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 500 }}>
-              {isAdmin 
-                ? "Administrator" 
-                : role === "visitor" 
-                  ? "Visitor" 
-                  : `Trainee${batchNumber ? ` • Batch ${batchNumber}` : ""}`}
-            </div>
-          </div>
-        </div>
-
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           {navItems.map(({ href, label, icon: Icon, exact }) => {
             const active = exact ? pathname === href : pathname.startsWith(href);
@@ -153,7 +120,8 @@ export default function Sidebar({ fullName, isAdmin, batchNumber, role }: Sideba
                 onClick={() => setIsOpen(false)}
                 style={{
                   display: "flex", alignItems: "center", gap: 12,
-                  padding: "10px 14px", borderRadius: 10,
+                  padding: "10px 16px", borderRadius: 12,
+                  margin: "0 12px",
                   background: active ? "rgba(99,102,241,0.12)" : "transparent",
                   color: active ? "var(--accent-primary)" : "var(--text-secondary)",
                   textDecoration: "none", fontWeight: active ? 600 : 500,
@@ -169,26 +137,58 @@ export default function Sidebar({ fullName, isAdmin, batchNumber, role }: Sideba
 
         <div className="flex-1" />
 
-        <button 
-          onClick={handleLogout}
-          style={{
-            display: "flex", alignItems: "center", gap: 12,
-            padding: "12px 14px", borderRadius: 10,
-            color: "#ef4444", 
-            textDecoration: "none",
-            fontSize: 14, 
-            fontWeight: 600,
-            transition: "all 0.2s",
-            background: "rgba(239,68,68,0.08)",
-            border: "1px solid rgba(239,68,68,0.15)",
-            cursor: "pointer",
-            width: "100%",
-            textAlign: "left"
-          }}
-        >
-          <LogOut size={18} />
-          <span>Sign Out</span>
-        </button>
+        {/* Bottom Section: Profile + Sign Out */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "0 12px" }}>
+          {/* User Profile Summary */}
+          <div style={{ 
+            padding: "8px 16px", 
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+          }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: "50%",
+              background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 14, fontWeight: 700, color: "white",
+              flexShrink: 0
+            }}>
+              {fullName.charAt(0).toUpperCase()}
+            </div>
+            <div style={{ overflow: "hidden" }}>
+              <div style={{ color: "var(--text-primary)", fontSize: 14, fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {fullName}
+              </div>
+              <div style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 500 }}>
+                {isAdmin 
+                  ? "Administrator" 
+                  : role === "visitor" 
+                    ? "Visitor" 
+                    : `Trainee${batchNumber ? ` • Batch ${batchNumber}` : ""}`}
+              </div>
+            </div>
+          </div>
+
+          <button 
+            onClick={handleLogout}
+            style={{
+              display: "flex", alignItems: "center", gap: 12,
+              padding: "12px 16px", borderRadius: 12,
+              color: "#ef4444", 
+              textDecoration: "none",
+              fontSize: 14, 
+              fontWeight: 600,
+              transition: "all 0.2s",
+              background: "transparent",
+              cursor: "pointer",
+              width: "100%",
+              textAlign: "left"
+            }}
+          >
+            <LogOut size={18} />
+            <span>Sign Out</span>
+          </button>
+        </div>
       </aside>
     </>
   );

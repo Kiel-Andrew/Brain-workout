@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { Mail, Lock, Loader2, Calculator } from "lucide-react";
+import { Mail, Lock, Loader2, Brain } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -50,10 +50,10 @@ export default function LoginPage() {
             marginBottom: 16,
             boxShadow: "0 0 30px rgba(99,102,241,0.4)"
           }}>
-            <Calculator size={30} color="white" />
+            <Brain size={30} color="white" />
           </div>
           <h1 style={{ fontSize: 26, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>
-            Math Workout
+            Brain Workout
           </h1>
           <p style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 6 }}>
             Sign in to start your daily session

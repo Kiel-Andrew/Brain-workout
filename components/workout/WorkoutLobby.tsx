@@ -197,6 +197,14 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
     if (key === "⌫") { setInput(p => p.slice(0, -1)); return; }
     if (key === "C")  { setInput(""); return; }
     if (key === "=")  { submitAnswer(); return; }
+    
+    // Prevent multiple leading zeros and handle replacing single zero
+    if (input === "0") {
+      if (key === "0") return; // ignore additional zeros
+      setInput(key); // replace "0" with new digit
+      return;
+    }
+    
     if (input.length < 6) setInput(p => p + key);
   }
 

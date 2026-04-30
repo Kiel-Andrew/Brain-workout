@@ -19,7 +19,7 @@ export default function WorkoutButton({ isAccessOpen }: WorkoutButtonProps) {
       }}>
         <Brain size={52} color="var(--text-muted)" strokeWidth={1.5} />
         <div style={{ textAlign: "center", padding: "0 20px" }}>
-          <div style={{ color: "var(--text-secondary)", fontSize: 16, fontWeight: 700 }}>Brain Workout</div>
+          <div style={{ color: "var(--text-secondary)", fontSize: 16, fontWeight: 700 }}>Math Workout</div>
           <div style={{ color: "var(--text-muted)", fontSize: 12, marginTop: 6 }}>
             Not available right now. Check the schedule.
           </div>
