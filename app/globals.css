@@ -229,3 +229,8 @@ body {
   background: rgba(99, 102, 241, 0.15);
   color: var(--accent-primary);
 }
+
+/* Sidebar hiding logic for distraction-free gaming */
+body.hide-sidebar aside {
+  display: none !important;
+}

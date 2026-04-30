@@ -156,6 +156,15 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
     };
   }, [gameState, finishGame]);
 
+  useEffect(() => {
+    if (gameState === "playing") {
+      document.body.classList.add("hide-sidebar");
+    } else {
+      document.body.classList.remove("hide-sidebar");
+    }
+    return () => document.body.classList.remove("hide-sidebar");
+  }, [gameState]);
+
   // ── Keyboard support ──
   useEffect(() => {
     if (gameState !== "playing") return;
