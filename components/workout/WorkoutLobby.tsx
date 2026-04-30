@@ -36,7 +36,18 @@ function generateQuestions(difficulty: Difficulty, count = 20): Question[] {
   return qs;
 }
 function rand(n: number) { return Math.floor(Math.random() * n) + 1; }
-function formatDur(s: number) { const m = Math.floor(s / 60); return `${m > 0 ? m + "m " : ""}${s % 60}s`; }
+function formatDur(sec: number, showMs = false) {
+  if (showMs) {
+    const mins = Math.floor(sec / 60);
+    const s = (sec % 60).toFixed(2);
+    if (mins > 0) return `${mins}m ${s}s`;
+    return `${s}s`;
+  }
+  const mins = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  if (mins > 0) return `${mins}m ${s}s`;
+  return `${s}s`;
+}
 
 export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
   leaderboard: LeaderboardEntry[];
@@ -57,6 +68,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
   const [penalty, setPenalty] = useState(0); // total seconds added for wrong answers
   const [input, setInput] = useState("");
   const [elapsed, setElapsed] = useState(0); // real seconds elapsed
+  const [penaltyPop, setPenaltyPop] = useState(false);
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -79,23 +91,23 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
     if (elapsedRef.current) clearInterval(elapsedRef.current);
     setGameState("finished");
     setSaving(true);
-    const realElapsed = Math.round((Date.now() - startRef.current) / 1000);
-    const finalDuration = realElapsed + penaltyRef.current;
+    const realElapsed = (Date.now() - startRef.current) / 1000;
+    const finalDuration = Number((realElapsed + penaltyRef.current).toFixed(2));
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
-      // 1. Check for existing best score for this difficulty
-      const { data: bestRecords } = await supabase
+      // 1. Check for existing record for this user/difficulty
+      const { data: records } = await supabase
         .from("workout_results")
-        .select("id, duration_seconds")
+        .select("id, duration_seconds, score")
         .eq("user_id", user.id)
         .eq("difficulty", difficulty)
         .order("duration_seconds", { ascending: true })
         .limit(1);
 
-      const existing = bestRecords && bestRecords.length > 0 ? bestRecords[0] : null;
+      const existing = records && records.length > 0 ? records[0] : null;
 
       if (!existing) {
-        // First time finishing this difficulty
+        // First time: Insert
         const { error } = await supabase.from("workout_results").insert({
           user_id: user.id,
           score: scoreRef.current,
@@ -104,20 +116,27 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
         });
         if (error) toast.error("Failed to save: " + error.message);
         else router.refresh();
-      } else if (finalDuration < existing.duration_seconds) {
-        // New personal best time!
-        const { error } = await supabase
-          .from("workout_results")
-          .update({
-            score: scoreRef.current,
-            duration_seconds: finalDuration,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existing.id);
-        
-        if (error) toast.error("Failed to save personal best: " + error.message);
-        else {
-          toast.success("New Personal Best!");
+      } else {
+        // Compare with existing best
+        const isBetterTime = finalDuration < (existing.duration_seconds || 999999);
+        const isSameTimeBetterScore = finalDuration === existing.duration_seconds && scoreRef.current > (existing.score || 0);
+
+        if (isBetterTime || isSameTimeBetterScore) {
+          const { error } = await supabase
+            .from("workout_results")
+            .update({
+              score: scoreRef.current,
+              duration_seconds: finalDuration,
+            })
+            .eq("id", existing.id);
+          
+          if (error) toast.error("Failed to update best: " + error.message);
+          else {
+            toast.success("New Personal Best! 🏆");
+            router.refresh();
+          }
+        } else {
+          // Not a personal best, but we should still refresh to show current results
           router.refresh();
         }
       }
@@ -130,8 +149,8 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
     if (gameState !== "playing") return;
     // Elapsed counter (progressive)
     elapsedRef.current = setInterval(() => {
-      setElapsed(Math.round((Date.now() - startRef.current) / 1000));
-    }, 1000);
+      setElapsed((Date.now() - startRef.current) / 1000);
+    }, 100); // More frequent update for internal precision
     return () => {
       if (elapsedRef.current) clearInterval(elapsedRef.current);
     };
@@ -191,6 +210,8 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
     } else {
       // +5 second penalty for wrong answer
       setPenalty(p => { penaltyRef.current = p + PENALTY_SECONDS; return p + PENALTY_SECONDS; });
+      setPenaltyPop(true);
+      setTimeout(() => setPenaltyPop(false), 3000);
     }
     setTimeout(() => {
       setFeedback(null); setInput("");
@@ -424,7 +445,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
                             {e.score}<span style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 400 }}>/20</span>
                           </span>
                         </td>
-                        <td style={{ fontWeight: 600, color: "var(--text-primary)" }}>{formatDur(e.duration)}</td>
+                        <td style={{ fontWeight: 600, color: "var(--text-primary)" }}>{formatDur(e.duration, true)}</td>
                         <td><span className={`badge ${e.score >= 18 ? "badge-success" : e.score >= 10 ? "badge-warning" : "badge-danger"}`}>{Math.round((e.score / 20) * 100)}%</span></td>
                       </tr>
                     );
@@ -500,7 +521,7 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
           {saving && <p style={{ color: "var(--text-muted)", fontSize: 12, marginTop: 16 }}>Saving result…</p>}
 
           <div style={{ display: "flex", gap: 12, marginTop: 28 }}>
-            <button id="btn-play-again" onClick={() => setGameState("lobby")} className="btn-primary" style={{ flex: 1 }}>
+            <button id="btn-play-again" onClick={startGame} className="btn-primary" style={{ flex: 1 }}>
               Play Again
             </button>
             <button id="btn-go-home" onClick={() => setGameState("lobby")} style={{
@@ -520,8 +541,9 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
   // PLAYING — Calculator UI
   // ═══════════════════════════════════════════════════════
   const q = questions[current];
-  const mins = Math.floor(elapsed / 60).toString().padStart(2, "0");
-  const secs = (elapsed % 60).toString().padStart(2, "0");
+  const totalLiveTime = elapsed + penalty;
+  const mins = Math.floor(totalLiveTime / 60).toString().padStart(2, "0");
+  const secs = Math.floor(totalLiveTime % 60).toString().padStart(2, "0");
   const KEYS = [["7", "8", "9"], ["4", "5", "6"], ["1", "2", "3"], ["C", "0", "⌫"]];
 
   return (
@@ -535,26 +557,42 @@ export default function WorkoutLobby({ leaderboard, batches, timerSeconds }: {
             <ChevronLeft size={16} /> Back
           </button>
 
-          <div style={{
-            display: "flex", alignItems: "center", gap: 6,
-            background: "rgba(99,102,241,0.12)",
-            border: "1px solid rgba(99,102,241,0.2)",
-            borderRadius: 10, padding: "6px 14px",
-            color: "var(--text-primary)",
-            fontWeight: 700, fontSize: 20, fontVariantNumeric: "tabular-nums",
-          }}>
-            <Clock size={16} />{mins}:{secs}
+          <div style={{ position: "relative" }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: 6,
+              background: "rgba(99,102,241,0.12)",
+              border: "1px solid rgba(99,102,241,0.2)",
+              borderRadius: 10, padding: "6px 14px",
+              color: "var(--text-primary)",
+              fontWeight: 700, fontSize: 20, fontVariantNumeric: "tabular-nums",
+            }}>
+              <Clock size={16} />{mins}:{secs}
+            </div>
+
+            {/* Floating Penalty Pop */}
+            {penaltyPop && (
+              <div style={{ 
+                color: "#ef4444", fontWeight: 900, fontSize: 24, 
+                position: "absolute", right: -50, top: 0,
+                zIndex: 100,
+                animation: "floatUp 1s ease-out forwards",
+                textShadow: "0 0 15px rgba(239,68,68,0.5)",
+                pointerEvents: "none"
+              }}>
+                +{PENALTY_SECONDS}s
+              </div>
+            )}
+            <style dangerouslySetInnerHTML={{ __html: `
+              @keyframes floatUp {
+                0% { transform: translateY(0); opacity: 0; }
+                20% { transform: translateY(-10px); opacity: 1; }
+                100% { transform: translateY(-30px); opacity: 0; }
+              }
+            `}} />
           </div>
 
           <span style={{ color: "var(--accent-primary)", fontWeight: 700, fontSize: 14 }}>Score: {score}</span>
         </div>
-
-        {/* Penalty indicator */}
-        {penalty > 0 && (
-          <div style={{ textAlign: "center", color: "#f59e0b", fontSize: 12, fontWeight: 600 }}>
-            ⚠️ +{penalty}s penalty accumulated
-          </div>
-        )}
 
         {/* Progress bar */}
         <div>
