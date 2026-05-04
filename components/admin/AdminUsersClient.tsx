@@ -65,7 +65,7 @@ export default function AdminUsersClient({ users: initial }: { users: User[] }) 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {/* Filters */}
-      <div className="glass-card" style={{ padding: "14px 16px", display: "flex", gap: 12, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
         <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
           <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--text-muted)" }} />
           <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name or email…" className="input-field" style={{ paddingLeft: 34, fontSize: 14, padding: "9px 12px 9px 34px" }} />
@@ -78,8 +78,8 @@ export default function AdminUsersClient({ users: initial }: { users: User[] }) 
         )}
       </div>
 
-      {/* Table */}
-      <div className="glass-card" style={{ overflowX: "auto" }}>
+      {/* Table container (minimal) */}
+      <div className="glass-card" style={{ overflowX: "auto", border: "1px solid var(--border-color)", background: "transparent" }}>
         <table className="data-table" style={{ minWidth: 700 }}>
           <thead>
             <tr>

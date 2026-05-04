@@ -4,16 +4,16 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { 
-  BarChart2, 
-  Settings, 
-  Clock, 
-  ArrowLeft, 
-  Menu, 
-  X, 
-  Brain, 
-  LogOut, 
-  Shield,
+import {
+  BarChart2,
+  Settings,
+  Clock,
+  Menu,
+  X,
+  Brain,
+  LogOut,
+  Trophy,
+  Users,
   LayoutDashboard
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -41,8 +41,10 @@ export default function Sidebar({ fullName, isAdmin, batchNumber, role }: Sideba
   const navItems = [
     { href: "/", label: "Home", icon: LayoutDashboard, exact: true },
     ...(isAdmin ? [
-      { href: "/admin", label: "Admin Dashboard", icon: Shield, exact: true },
-      { href: "/admin/settings", label: "Settings", icon: Settings, exact: false },
+      { href: "/admin", label: "Dashboard", icon: BarChart2, exact: true },
+      { href: "/admin/users", label: "Users", icon: Users, exact: false },
+      { href: "/admin/leaderboard", label: "Leaderboard", icon: Trophy, exact: false },
+      { href: "/admin/settings", label: "Time Scheduling", icon: Clock, exact: false },
     ] : []),
   ];
 
@@ -62,7 +64,7 @@ export default function Sidebar({ fullName, isAdmin, batchNumber, role }: Sideba
             Math Workout
           </div>
         </Link>
-        <button 
+        <button
           onClick={() => setIsOpen(!isOpen)}
           className="p-2 hover:bg-[var(--border-color)] rounded-lg transition-colors"
         >
@@ -72,7 +74,7 @@ export default function Sidebar({ fullName, isAdmin, batchNumber, role }: Sideba
 
       {/* Overlay for Mobile */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden animate-fade-in"
           onClick={() => setIsOpen(false)}
         />
@@ -98,11 +100,11 @@ export default function Sidebar({ fullName, isAdmin, batchNumber, role }: Sideba
             }}>
               <Brain size={24} color="white" strokeWidth={2} />
             </div>
-            <div style={{ 
-              color: "var(--text-primary)", 
-              fontSize: 20, 
-              fontWeight: 800, 
-              textTransform: "uppercase", 
+            <div style={{
+              color: "var(--text-primary)",
+              fontSize: 20,
+              fontWeight: 800,
+              textTransform: "uppercase",
               letterSpacing: "0.05em"
             }}>
               Math Workout
@@ -114,9 +116,9 @@ export default function Sidebar({ fullName, isAdmin, batchNumber, role }: Sideba
           {navItems.map(({ href, label, icon: Icon, exact }) => {
             const active = exact ? pathname === href : pathname.startsWith(href);
             return (
-              <Link 
-                key={href} 
-                href={href} 
+              <Link
+                key={href}
+                href={href}
                 onClick={() => setIsOpen(false)}
                 style={{
                   display: "flex", alignItems: "center", gap: 12,
@@ -138,10 +140,16 @@ export default function Sidebar({ fullName, isAdmin, batchNumber, role }: Sideba
         <div className="flex-1" />
 
         {/* Bottom Section: Profile + Sign Out */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "0 12px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, margin: "0 12px" }}>
+          {/* Separator */}
+          <div style={{ height: 1, background: "var(--border-color)", margin: "0 4px 4px" }} />
+
+          <div style={{ margin: "0 16px", color: "var(--text-muted)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            Admin Profile
+          </div>
           {/* User Profile Summary */}
-          <div style={{ 
-            padding: "8px 16px", 
+          <div style={{
+            padding: "8px 16px",
             display: "flex",
             alignItems: "center",
             gap: 12,
@@ -160,23 +168,23 @@ export default function Sidebar({ fullName, isAdmin, batchNumber, role }: Sideba
                 {fullName}
               </div>
               <div style={{ color: "var(--text-muted)", fontSize: 11, fontWeight: 500 }}>
-                {isAdmin 
-                  ? "Administrator" 
-                  : role === "visitor" 
-                    ? "Visitor" 
+                {isAdmin
+                  ? "Administrator"
+                  : role === "visitor"
+                    ? "Visitor"
                     : `Trainee${batchNumber ? ` • Batch ${batchNumber}` : ""}`}
               </div>
             </div>
           </div>
 
-          <button 
+          <button
             onClick={handleLogout}
             style={{
               display: "flex", alignItems: "center", gap: 12,
               padding: "12px 16px", borderRadius: 12,
-              color: "#ef4444", 
+              color: "#ef4444",
               textDecoration: "none",
-              fontSize: 14, 
+              fontSize: 14,
               fontWeight: 600,
               transition: "all 0.2s",
               background: "transparent",

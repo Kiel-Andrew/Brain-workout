@@ -18,7 +18,7 @@ export default async function AdminSettingsPage() {
           <Settings size={20} color="#6366f1" />
         </div>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)" }}>Settings</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--text-primary)" }}>Time Scheduling</h1>
           <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>Workout access control and timer configuration</p>
         </div>
       </div>

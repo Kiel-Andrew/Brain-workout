@@ -96,7 +96,7 @@ export default function AdminLeaderboardClient({ sessions }: AdminLeaderboardCli
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Filters Bar */}
-      <div className="glass-card" style={{ padding: "16px 20px", display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "flex-end", justifyContent: "space-between" }}>
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
           {/* Date Picker */}
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -188,7 +188,7 @@ export default function AdminLeaderboardClient({ sessions }: AdminLeaderboardCli
       </div>
 
       {/* Leaderboard Table */}
-      <div className="glass-card" style={{ overflowX: "auto" }}>
+      <div className="glass-card" style={{ overflowX: "auto", border: "1px solid var(--border-color)", background: "transparent" }}>
         <table className="data-table" style={{ minWidth: 700 }}>
           <thead>
             <tr>

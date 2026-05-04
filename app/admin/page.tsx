@@ -39,7 +39,7 @@ export default async function AdminDashboardPage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 32, paddingTop: 10 }}>
       <div>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>Admin Dashboard</h1>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: "var(--text-primary)", letterSpacing: "-0.5px" }}>Dashboard</h1>
         <p style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 4 }}>Overview of engagement and trainee performance</p>
       </div>
 
@@ -63,10 +63,6 @@ export default async function AdminDashboardPage() {
         ))}
       </div>
 
-      <DashboardTabs 
-        users={allUsers ?? []} 
-        recentSessions={(recentResults as any) ?? []} 
-      />
     </div>
   );
 }
